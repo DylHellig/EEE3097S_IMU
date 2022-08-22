@@ -56,11 +56,11 @@ def do_encryption(filenames, timing=False, generate_files=False):
 
         #generate textfiles
         if generate_files:
-            with open('encrypted/encrypted_'+file+'.txt', 'w') as f:
+            with open('encrypted/encrypted_'+file, 'w') as f:
                 f.writelines(str(ciphertext))
 
             start = get_time()
-            with open('decrypted/decrypted_'+file+'.txt', 'w') as f:
+            with open('decrypted/decrypted_'+file, 'w') as f:
                 f.writelines(str(plaintext))
             stop = get_time()
             write_time = round(stop-start, 4)
@@ -86,4 +86,4 @@ def do_encryption(filenames, timing=False, generate_files=False):
 if __name__ == '__main__':
     
     filenames = ['Turntable1.txt', 'Turntable2.txt', 'WalkingAround.txt']
-    do_encryption(filenames, timing=True)
+    do_encryption(filenames, timing=True, generate_files=True)
