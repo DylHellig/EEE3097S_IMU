@@ -26,7 +26,7 @@ def do_compression(filenames):
         stop = get_time()
         comp_time = round(stop-start, 4)
 
-        with open('compressed/'+file+'_compressed.txt', 'wb') as f:
+        with open('compressed/compressed_'+file, 'wb') as f:
             f.writelines(compressed)
 
         decompressed = []
@@ -39,7 +39,7 @@ def do_compression(filenames):
 
         total_time = comp_time + decomp_time
 
-        with open('decompressed/'+file+'_decompressed.txt', 'wb') as f:
+        with open('decompressed/decompressed_'+file, 'wb') as f:
             f.writelines(decompressed)
 
 
