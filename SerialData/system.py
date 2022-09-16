@@ -7,7 +7,7 @@ import preprocessing as pre
 
 original = "hi"
 
-s = serial.Serial('/dev/ttyUSB2', 
+s = serial.Serial('/dev/ttyUSB0', 
     baudrate=9600, 
     stopbits=serial.STOPBITS_ONE,
     bytesize=serial.EIGHTBITS,
@@ -15,6 +15,7 @@ s = serial.Serial('/dev/ttyUSB2',
     xonxoff=False
 )
 vals = []
+print('Reading Data From Serial Port...')
 while True:
     try:
         data = s.readline()
@@ -34,31 +35,17 @@ nonce = nonce[1:-1]
 tag = tag[1:-1]
 cipher = cipher[1:-1]
 
-print(key)
-print(nonce)
-print(tag)
-print(cipher)
-
 plain = e.decrypt(key, nonce, cipher, tag)
-print(plain)
 
 decomp = c.decompress(plain)
-print(str(decomp)[2:-1])
+print("Data after decryption and decompression:")
+final = str(decomp)[2:-1]
+print(final)
 
-# with open('nonce.txt', 'rb') as f:
-#     nonce = f.read()
-    
-# with open('key.txt', 'rb') as f:
-#     key = f.read()
+print("Checking correctness...")
+if(final==original):
+    print('The retrieved data is exactly the same as the original.')
+else:
+    print("data is not correct")
 
-# with open('tag.txt', 'rb') as f:
-#     tag = f.read()
-
-
-
-# plain = e.decrypt(key, nonce, data, tag)
-# print(plain)
-
-# decomp = c.decompress(plain)
-# print(str(decomp)[2:-1])
 

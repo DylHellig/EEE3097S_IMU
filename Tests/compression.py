@@ -15,7 +15,7 @@ def get_time():
 
 def do_compression(filenames):
     for file in filenames:
-        with open('csv_as_text/'+file) as f:
+        with open(file) as f:
             original = f.readlines()
 
         compressed = []
@@ -43,10 +43,10 @@ def do_compression(filenames):
             f.writelines(decompressed)
 
 
-        with open('csv_as_text/'+file) as f:
+        with open(file) as f:
             original_file = f.read()
 
-        with open('decompressed/'+file+'_decompressed.txt') as f:
+        with open('decompressed/decompressed_'+file) as f:
             decompressed_file = f.read()
         print(f'Checking decompression for {file}')
         if original_file==decompressed_file:
@@ -61,5 +61,5 @@ def do_compression(filenames):
         print('-------------------------------------')
 
 if __name__ == '__main__':
-    filenames = ['Turntable1.txt', 'Turntable2.txt', 'WalkingAround.txt']
+    filenames = ['Turntable150.txt']
     do_compression(filenames)

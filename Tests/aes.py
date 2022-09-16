@@ -37,7 +37,7 @@ def get_time():
 def do_encryption(filenames, timing=False, generate_files=False):
     for file in filenames:
         #read text file as a string
-        with open('csv_as_text/'+file) as f:
+        with open(file) as f:
             original = f.read()
     
         start = get_time()
@@ -78,12 +78,11 @@ def do_encryption(filenames, timing=False, generate_files=False):
 
         print('-------------------------------------')
 
-        
 
         
 
 
 if __name__ == '__main__':
     
-    filenames = ['Turntable1.txt', 'Turntable2.txt', 'WalkingAround.txt']
+    filenames = ['Turntable150.txt']
     do_encryption(filenames, timing=True, generate_files=True)
