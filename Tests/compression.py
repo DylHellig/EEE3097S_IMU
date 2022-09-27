@@ -60,6 +60,8 @@ def do_compression(filenames):
 
         print('-------------------------------------')
 
+
 if __name__ == '__main__':
+    print('yeowzit')
     filenames = ['Turntable150.txt']
     do_compression(filenames)
