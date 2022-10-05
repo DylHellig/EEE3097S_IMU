@@ -15,10 +15,11 @@
 #include "Base64.h"
 #include "Base64.cpp"
 #include "unishox2.h"
+#include <ctime>
 
 using namespace std;
 
-#define FILE_SIZE 6
+#define FILE_SIZE 7
 #define BUFFER_SIZE 1024
 
 AES128 aes;
@@ -64,10 +65,13 @@ int main(){
     for(int i=0; i<FILE_SIZE; i++){
         file >> ciphertext[i];
     }
-
+    time_t t1, t2;
     for(int i=0; i<FILE_SIZE; i++){
+        t1 = time();
         decrypt(ciphertext[i]);
-        printf("%s\n", output);
+        t2 = time();
+        float total_time = (float) (t2-t1);
+        // printf("%s\n", output);
         memset(output, 0, sizeof(output));
     }
 
