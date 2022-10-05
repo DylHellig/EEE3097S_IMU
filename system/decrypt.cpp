@@ -18,7 +18,7 @@
 
 using namespace std;
 
-#define FILE_SIZE 7
+#define FILE_SIZE 6
 #define BUFFER_SIZE 1024
 
 AES128 aes;
