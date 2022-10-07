@@ -15,12 +15,13 @@
 #include "Base64.h"
 #include "Base64.cpp"
 #include "unishox2.h"
-#include <ctime>
+#include <sys/time.h>
+#include <chrono>
 
 using namespace std;
 
-#define FILE_SIZE 7
-#define BUFFER_SIZE 1024
+#define FILE_SIZE 13
+#define BUFFER_SIZE 2048
 
 AES128 aes;
 uint8_t key[17] = "\x05\x01\x02\x03\x04\x05\x06\x07\x08\x09\x0a\x0b\x0c\x0d\x0e\x0f";
@@ -57,7 +58,7 @@ void decrypt(const char* data){
 int main(){
 
     aes.setKey(key, 16);
-    ifstream file("decomp.txt");
+    ifstream file("ciphertext.txt");
 
     if(!file.is_open()){
         cout<<"Error opening file";
@@ -65,13 +66,16 @@ int main(){
     for(int i=0; i<FILE_SIZE; i++){
         file >> ciphertext[i];
     }
-    time_t t1, t2;
+    //printf("Data after Decryption:\n");
+    
     for(int i=0; i<FILE_SIZE; i++){
-        t1 = time();
+        auto start = chrono::steady_clock::now();
         decrypt(ciphertext[i]);
-        t2 = time();
-        float total_time = (float) (t2-t1);
-        // printf("%s\n", output);
+        auto end = chrono::steady_clock::now();
+        cout << "Elapsed time in microseconds: "
+        << chrono::duration_cast<chrono::microseconds>(end - start).count()
+        << " us" << endl;
+        //printf("%s\n", output);
         memset(output, 0, sizeof(output));
     }
 
