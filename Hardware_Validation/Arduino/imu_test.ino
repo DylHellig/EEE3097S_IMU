@@ -8,19 +8,19 @@
 #include "shox96_0_2.h"
 #include "unishox2.h"
 
+//program constants
 #define BUFFER_SIZE 1024
 #define BLOCK_SIZE 16
 
 //General GVs
 volatile byte state = LOW;
-char buff[BUFFER_SIZE];
+char buff[BUFFER_SIZE]; //IMU data buffer
 char x[10];
 bool got_key = false;
 String k;
 
 //compression GVs
-char comp[BUFFER_SIZE];
-char decomp[BUFFER_SIZE];
+char comp[BUFFER_SIZE];//compression data buffer
 
 //Encryption GVs
 AES128 aes128;
@@ -28,7 +28,7 @@ uint8_t key[17] = "\x05\x01\x02\x03\x04\x05\x06\x07\x08\x09\x0a\x0b\x0c\x0d\x0e\
 char key_str[17];
 char tmp[BLOCK_SIZE+1];
 uint8_t cypher[BLOCK_SIZE+1];
-char cystring[2048];
+char cystring[2048];//encryption data buffer
 char ciphertext[BUFFER_SIZE];
 
 
@@ -40,14 +40,14 @@ ICM_20948_SPI myICM;
 void setup() {
 
   Serial2.println("Initializing Setup...");
-  Serial2.begin(9600);
-  aes128.setKey(key,16);
+  Serial2.begin(9600); //initialize serial connection
+  aes128.setKey(key,16); //initialize encryption with key
   pinMode(PC9, OUTPUT);
-  attachInterrupt(digitalPinToInterrupt(PA0), start_stop, RISING);
+  attachInterrupt(digitalPinToInterrupt(PA0), start_stop, RISING);//interrupt to start/stop streaming data
   SPI_1.begin(PC4);
   myICM.begin(PC4, SPI_1);
   bool initialized = false;
-  
+  //initializing IMU to ensure it is ready to stream data
   while(!initialized){
     
     myICM.begin(PC4, SPI_1);
@@ -68,7 +68,7 @@ void setup() {
   
 }
 
-int num_readings = 19;
+int num_readings = 1;// counter to choose number of IMU readings to store in buffer
 void loop() {
   //button press to start sending data
   if(state){
@@ -76,38 +76,28 @@ void loop() {
     if(myICM.dataReady()){
       digitalWrite(PC9, HIGH);
       
-      empty(buff);
-      int t1 = micros();
-      //if(num_readings<2){
+      empty(buff);//empty IMU data buffer
+      //loop to load a number of IMU readings into the buffer
       for(int i=0; i<num_readings; i++){
         myICM.getAGMT();
         loadBuffer(&myICM);
       }
-        //num_readings++;
-      //}
-      
-      // for(int i=0; i<3; i++){
-      //   myICM.getAGMT();
-      //   loadBuffer(&myICM);
-      // }
-      // Serial2.println(strlen(buff));
+      // Serial2.println("IMU Data:");
       // Serial2.println(buff);
-      empty(cystring);
-      encryption(buff);
+
+      empty(cystring);//empty ciphertext buffer
+      encryption(buff);//encrypt IMU data
+      // Serial2.println("Encrypted Data:");
       // Serial2.println(cystring);
-      // Serial2.println(strlen(cystring));
-      empty(comp);  
+     
+      empty(comp);// empty compression data buffer
+      //compress ciphertext using Unishox2
       unishox2_compress_simple(cystring, strlen(cystring), comp);
-      // Serial2.println(strlen(cystring));
-      // Serial2.println(strlen(comp));
-      //Serial2.print("Compression Ratio: ");Serial2.println(comp_ratio, 2);
-      //Serial2.println(strlen(comp));
-      // Serial2.println(comp);   
+      // Serial2.println("Compressed Data:");
+      // Serial2.println(comp);
+      //print compression data
       print_comp();
-      int t2 = micros();
-      float ex_time = (t2-t1)/1e6; 
-      Serial2.println(ex_time);
-      delay(1000);
+      delay(500);//1 second delay
     }
     // if ICM not ready to send data
     else{
@@ -124,6 +114,7 @@ void loop() {
   
 }//end loop
 
+//function to print data needed for decompression on host machine
 void print_comp(){
   Serial2.println("Data:");
   Serial2.println(strlen(cystring));
@@ -131,10 +122,7 @@ void print_comp(){
   Serial2.println();
 }
 
-void comp_metrics(uint32_t t1, uint32_t t2){
-
-}
-
+//function to convert hex string to a byte array
 void toBytes(const char* src, uint8_t* x, int start, int stop){
     int value;
     for(int i=0; i<stop; i++){
@@ -144,11 +132,12 @@ void toBytes(const char* src, uint8_t* x, int start, int stop){
     }
 }
 
-//interrupt function
+//interrupt function for button press
 void start_stop(){
   state = !state;
 }
 
+//function to empty buffer contents
 void empty(char * x){
   memset(x, 0, sizeof(x));
 }
@@ -188,11 +177,14 @@ void loadBuffer(ICM_20948_SPI *sensor){
   
 }
 
-
+//fucntion to format buffer data to a string
 void formattedString(float val, int decimals){
   dtostrf(val, -1, decimals, x); 
 }
 
+//encryption function
+//splits larger data into 16 byte blocks to be encrypted
+//joins 16 byte ciphertext together to get a single ciphertext string
 void encryption(char * plaintext){
   
   int n = strlen(plaintext);
