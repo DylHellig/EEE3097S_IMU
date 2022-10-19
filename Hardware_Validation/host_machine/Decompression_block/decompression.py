@@ -65,6 +65,7 @@ for i, entry in enumerate(entries):
             pass
 #print(f"{(p/count)*100}% passed")
 print("All Data has been successfully compressed.")
+
 with open('../Decryption_block/data/decomp.txt', 'w') as f:
     for decomp in decompressed:
         f.write(f"{decomp}\n")

@@ -14,10 +14,15 @@
 
 //General GVs
 volatile byte state = LOW;
-char buff[BUFFER_SIZE]; //IMU data buffer
+
+char buff[BUFFER_SIZE] = "This is a known string";
+
 char x[10];
 bool got_key = false;
 String k;
+
+//compression GVs
+char comp[BUFFER_SIZE];//compression data buffer
 
 //Encryption GVs
 AES128 aes128;
@@ -31,8 +36,7 @@ char ciphertext[BUFFER_SIZE];
 
 //Interfaces
 HardwareSerial Serial2(PA3, PA2);
-SPIClass SPI_1(PA7, PA6, PA5);
-ICM_20948_SPI myICM;
+
 
 void setup() {
 
@@ -41,28 +45,6 @@ void setup() {
   aes128.setKey(key,16); //initialize encryption with key
   pinMode(PC9, OUTPUT);
   attachInterrupt(digitalPinToInterrupt(PA0), start_stop, RISING);//interrupt to start/stop streaming data
-  SPI_1.begin(PC4);
-  myICM.begin(PC4, SPI_1);
-  bool initialized = false;
-  //initializing IMU to ensure it is ready to stream data
-  while(!initialized){
-    
-    myICM.begin(PC4, SPI_1);
-    myICM.startupDefault();
-    Serial2.println("System Ready. Press Blue Button to Start/Stop Sending Data.");
-    
-    if(myICM.status != ICM_20948_Stat_Ok){
-      Serial2.println("Trying again...");
-      delay(500);
-    }
-    else{
-      initialized = true;
-    }
-
-    Serial2.println("AccX(mg),AccY(mg),AccZ(mg),GyrX(dps),GyrY(dps),GyrZ(dps),Temp(C)");
-    
-  }
-  
 }
 
 int num_readings = 1;// counter to choose number of IMU readings to store in buffer
@@ -70,30 +52,24 @@ void loop() {
   //button press to start sending data
   if(state){
     //check ICM ready to send data
-    if(myICM.dataReady()){
       digitalWrite(PC9, HIGH);
       
-      empty(buff);//empty IMU data buffer
-      //loop to load a number of IMU readings into the buffer
-      for(int i=0; i<num_readings; i++){
-        myICM.getAGMT();
-        loadBuffer(&myICM);
-      }
+      
 
       //Serial2.println(buff);
 
       empty(cystring);//empty ciphertext buffer
       encryption(buff);//encrypt IMU data
 
-      Serial2.println(cystring);
-  
-      delay(1000);//1 second delay
-    }
-    // if ICM not ready to send data
-    else{
-      Serial2.println("Waiting for data...");
-      delay(500);
-    }
+      //Serial2.println(cystring);
+     
+      empty(comp);// empty compression data buffer
+      //compress ciphertext using Unishox2
+      unishox2_compress_simple(cystring, strlen(cystring), comp);
+      //Serial2.println(comp);
+      //print compression data
+      print_comp();
+      delay(6000);//1 second delay
     
   }
   //button press stop sending data
@@ -103,6 +79,14 @@ void loop() {
       
   
 }//end loop
+
+//function to print data needed for decompression on host machine
+void print_comp(){
+  Serial2.println("Data:");
+  Serial2.println(strlen(cystring));
+  Serial2.write(comp);
+  Serial2.println();
+}
 
 //function to convert hex string to a byte array
 void toBytes(const char* src, uint8_t* x, int start, int stop){
@@ -196,4 +180,5 @@ void encryption(char * plaintext){
   }
      
 }
+
 

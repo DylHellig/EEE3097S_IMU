@@ -19,6 +19,6 @@ while True:
         print("Keyboard Interrupt")
         break
 
-with open('ciphertext.txt', 'wb') as f:
+with open('Decryption_block/data/ciphertext.txt', 'wb') as f:
     for entry in entries:
         f.write(entry)
