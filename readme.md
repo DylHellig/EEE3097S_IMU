@@ -10,7 +10,7 @@
   * tests.ipynb -> Jupyter notebook for ATP validation
   * Turntable150.txt -> Sample data for software simulation
 
-* Hardware_Validation <br>
+* Hardware_Validation: <br>
   * Arduino: -> STM programs<br>
     * compression_test.ino -> Compression block tets on STM
     * encryption_test.ino -> Encryption block test on STM
